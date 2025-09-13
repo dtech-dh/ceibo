@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  app:
+    image: registry.digitalocean.com/misapps/miapp:latest
+    container_name: miapp
+    restart: always
+    ports:
+      - "8080:8080"   # Ajustá el puerto según tu app
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql://user:pass@db:5432/miapp
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"] # Ajustar endpoint de health
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  db:
+    image: postgres:15
+    container_name: miapp-db
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=miapp
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # Ejemplo de servicio opcional: adminer/pgadmin
+  adminer:
+    image: adminer
+    container_name: miapp-adminer
+    restart: always
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
