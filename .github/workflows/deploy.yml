@@ -65,26 +65,26 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USER }}/ceibo:latest
 
       # 🚀 Deploy remoto en Droplet
-      - name: Deploy en Droplet
+      - name: Deploy to Droplet
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-
+            mkdir -p /srv/ceibo
             if [ ! -d "/srv/ceibo/.git" ]; then
-              echo "📥 Clonando repo por primera vez..."
-              git clone https://${GH_PAT}@github.com/dtech-dh/ceibo.git /srv/ceibo
+              echo "📥 Primera implementación: clonando repo con GH_PAT..."
+              rm -rf /srv/ceibo
+              git clone https://oauth2:${{ secrets.GH_PAT }}@github.com/dtech-dh/ceibo.git /srv/ceibo
             else
               echo "🔄 Actualizando repo existente..."
               cd /srv/ceibo
               git reset --hard
-              git pull origin main
+              git pull https://oauth2:${{ secrets.GH_PAT }}@github.com/dtech-dh/ceibo.git main
             fi
 
             cd /srv/ceibo
             echo "🐳 Deploy con Docker Compose..."
             docker compose pull
             docker compose up -d
-            echo "✅ Deploy completado"
