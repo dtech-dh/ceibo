@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:   # 👉 Esto habilita el botón "Run workflow"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,14 +14,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🔑 Login a Docker Hub con usuario y token (con permisos de Read & Write)
+      # ✅ Validación de secrets requeridos
+      - name: Validate secrets
+        run: |
+          missing=0
+          for var in DOCKER_HUB_USER DOCKER_HUB_TOKEN DO_HOST DO_USER DO_SSH_KEY; do
+            if [ -z "${{ secrets[$var] }}" ]; then
+              echo "❌ ERROR: Falta definir el secret $var en GitHub"
+              missing=1
+            else
+              echo "✅ $var está definido"
+            fi
+          done
+          if [ $missing -ne 0 ]; then
+            echo "❌ Faltan variables obligatorias, abortando workflow."
+            exit 1
+          fi
+
+      # 🔑 Login a Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # 🐳 Build & Push a Docker Hub
+      # 🐳 Build & Push imagen
       - name: Build & Push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -29,7 +46,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USER }}/ceibo:latest
 
-      # 🚀 Deploy al droplet
+      # 🚀 Deploy remoto
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@v1.2.0
         with:
