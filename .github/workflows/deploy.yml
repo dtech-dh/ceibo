@@ -38,12 +38,10 @@ jobs:
             echo "❌ Falta DO_SSH_KEY"
             missing=1
           fi
-
           if [ $missing -ne 0 ]; then
             echo "❌ Faltan variables obligatorias, abortando workflow."
             exit 1
           fi
-
           echo "✅ Todos los secrets requeridos están definidos"
 
       # 🔑 Login a Docker Hub
@@ -53,7 +51,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # 🐳 Build & Push imagen
+      # 🐳 Build & Push imagen a Docker Hub
       - name: Build & Push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -61,7 +59,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USER }}/ceibo:latest
 
-      # 🚀 Deploy remoto
+      # 🚀 Deploy remoto en Droplet
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -69,6 +67,20 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
+            mkdir -p /srv/ceibo
+
+            if [ ! -d "/srv/ceibo/.git" ]; then
+              echo "📥 Clonando repo por primera vez..."
+              git clone https://github.com/dtech-dh/ceibo.git /srv/ceibo
+            else
+              echo "🔄 Actualizando repo existente..."
+              cd /srv/ceibo
+              git reset --hard
+              git pull origin main
+            fi
+
             cd /srv/ceibo
+            echo "🐳 Deploy con Docker Compose..."
             docker compose pull
-            docker
+            docker compose up -d
+            echo "✅ Deploy completado"
