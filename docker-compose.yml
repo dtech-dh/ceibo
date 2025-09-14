@@ -1,43 +1,30 @@
 version: "3.9"
-
 services:
-  app:
-    image: registry.digitalocean.com/misapps/miapp:latest
-    container_name: miapp
-    restart: always
+  ceibo:
+    build: .
+    container_name: ceibo
+    env_file: .env
+    restart: unless-stopped
     ports:
-      - "8080:8080"   # Ajustá el puerto según tu app
-    environment:
-      - ENV=production
-      - DATABASE_URL=postgresql://user:pass@db:5432/miapp
-    depends_on:
-      - db
+      - "8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"] # Ajustar endpoint de health
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ceibo.rule=Host(`ceibo.midominio.com`)"
+      - "traefik.http.routers.ceibo.entrypoints=websecure"
+      - "traefik.http.routers.ceibo.tls.certresolver=myresolver"
 
-  db:
-    image: postgres:15
-    container_name: miapp-db
-    restart: always
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=miapp
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-  # Ejemplo de servicio opcional: adminer/pgadmin
-  adminer:
-    image: adminer
-    container_name: miapp-adminer
-    restart: always
-    ports:
-      - "8081:8080"
-    depends_on:
-      - db
-
-volumes:
-  db_data:
+networks:
+  proxy:
+    external: true
