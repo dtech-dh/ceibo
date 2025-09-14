@@ -5,7 +5,6 @@ services:
     container_name: ceibo
     restart: unless-stopped
     env_file: .env
-    restart: unless-stopped
     ports:
       - 5000:8000
     healthcheck:
