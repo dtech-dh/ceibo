@@ -42,7 +42,10 @@ jobs:
             echo "❌ Falta GH_PAT"
             missing=1
           fi
-
+          if [ -z "${{ secrets.DOTENV }}" ]; then
+            echo "❌ Falta DOTENV"
+            missing=1
+          fi
           if [ $missing -ne 0 ]; then
             echo "❌ Faltan variables obligatorias, abortando workflow."
             exit 1
@@ -83,6 +86,9 @@ jobs:
               git reset --hard
               git pull https://oauth2:${{ secrets.GH_PAT }}@github.com/dtech-dh/ceibo.git main
             fi
+
+            # 🔑 Generar .env desde secret
+            echo "${{ secrets.DOTENV }}" > /srv/ceibo/.env
 
             cd /srv/ceibo
             echo "🐳 Deploy con Docker Compose..."
