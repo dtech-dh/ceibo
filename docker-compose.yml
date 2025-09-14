@@ -1,7 +1,7 @@
-version: "3.9"
+
 services:
   ceibo:
-    image: dtech-dh/ceibo:latest
+    image: dtechdhgr/ceibo:latest
     container_name: ceibo
     restart: unless-stopped
     env_file: .env
