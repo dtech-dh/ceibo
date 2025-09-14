@@ -1,8 +1,9 @@
 version: "3.9"
 services:
   ceibo:
-    build: .
+    image: dtech-dh/ceibo:latest
     container_name: ceibo
+    restart: unless-stopped
     env_file: .env
     restart: unless-stopped
     ports:
@@ -24,7 +25,7 @@ services:
       - "traefik.http.routers.ceibo.rule=Host(`ceibo.midominio.com`)"
       - "traefik.http.routers.ceibo.entrypoints=websecure"
       - "traefik.http.routers.ceibo.tls.certresolver=myresolver"
-
 networks:
   proxy:
     external: true
+
