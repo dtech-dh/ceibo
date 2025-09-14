@@ -38,6 +38,11 @@ jobs:
             echo "❌ Falta DO_SSH_KEY"
             missing=1
           fi
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "❌ Falta GH_PAT"
+            missing=1
+          fi
+
           if [ $missing -ne 0 ]; then
             echo "❌ Faltan variables obligatorias, abortando workflow."
             exit 1
@@ -70,7 +75,7 @@ jobs:
 
             if [ ! -d "/srv/ceibo/.git" ]; then
               echo "📥 Clonando repo por primera vez..."
-              git clone https://github.com/dtech-dh/ceibo.git /srv/ceibo
+              git clone https://${GH_PAT}@github.com/dtech-dh/ceibo.git /srv/ceibo
             else
               echo "🔄 Actualizando repo existente..."
               cd /srv/ceibo
