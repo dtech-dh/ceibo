@@ -14,22 +14,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ Validación de secrets requeridos
+      # ✅ Validación de secrets
       - name: Validate secrets
         run: |
           missing=0
-          for var in DOCKER_HUB_USER DOCKER_HUB_TOKEN DO_HOST DO_USER DO_SSH_KEY; do
-            if [ -z "${{ secrets[$var] }}" ]; then
-              echo "❌ ERROR: Falta definir el secret $var en GitHub"
-              missing=1
-            else
-              echo "✅ $var está definido"
-            fi
-          done
+          if [ -z "${{ secrets.DOCKER_HUB_USER }}" ]; then
+            echo "❌ Falta DOCKER_HUB_USER"
+            missing=1
+          fi
+          if [ -z "${{ secrets.DOCKER_HUB_TOKEN }}" ]; then
+            echo "❌ Falta DOCKER_HUB_TOKEN"
+            missing=1
+          fi
+          if [ -z "${{ secrets.DO_HOST }}" ]; then
+            echo "❌ Falta DO_HOST"
+            missing=1
+          fi
+          if [ -z "${{ secrets.DO_USER }}" ]; then
+            echo "❌ Falta DO_USER"
+            missing=1
+          fi
+          if [ -z "${{ secrets.DO_SSH_KEY }}" ]; then
+            echo "❌ Falta DO_SSH_KEY"
+            missing=1
+          fi
+
           if [ $missing -ne 0 ]; then
             echo "❌ Faltan variables obligatorias, abortando workflow."
             exit 1
           fi
+
+          echo "✅ Todos los secrets requeridos están definidos"
 
       # 🔑 Login a Docker Hub
       - name: Log in to Docker Hub
@@ -56,4 +71,4 @@ jobs:
           script: |
             cd /srv/ceibo
             docker compose pull
-            docker compose up -d
+            docker
