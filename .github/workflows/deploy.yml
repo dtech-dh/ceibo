@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:   # 👉 Esto habilita el botón "Run workflow"
 
 jobs:
   deploy:
