@@ -18,13 +18,13 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - proxy
+      - ceibo_net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ceibo.rule=Host(`ceibo.midominio.com`)"
       - "traefik.http.routers.ceibo.entrypoints=websecure"
       - "traefik.http.routers.ceibo.tls.certresolver=myresolver"
 networks:
-  proxy:
-    external: true
+  ceibo_net:
+    driver: bridge
 
